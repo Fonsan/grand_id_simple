@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     grand_id_simple (0.1.0)
+      typhoeus (~> 1.4)
 
 GEM
   remote: https://rubygems.org/
@@ -84,6 +85,7 @@ GEM
 
 PLATFORMS
   x86_64-darwin-20
+  x86_64-darwin-22
   x86_64-linux
 
 DEPENDENCIES
@@ -95,4 +97,4 @@ DEPENDENCIES
   typhoeus
 
 BUNDLED WITH
-   2.4.0.dev
+   2.3.26
