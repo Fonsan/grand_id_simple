@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    grand_id_simple (0.1.0)
+    grand_id_simple (0.2.0)
       typhoeus (~> 1.4)
 
 GEM
