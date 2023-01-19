@@ -5,7 +5,7 @@ require 'oj'
 require 'typhoeus'
 
 class GrandIdSimple
-  DEFAULT_BASE_URL = 'client.grandid.com'
+  DEFAULT_BASE_URL = 'https://client.grandid.com'
 
   class Error < StandardError
     attr_reader :code
