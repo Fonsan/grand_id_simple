@@ -16,7 +16,28 @@ If bundler is not being used to manage dependencies, install the gem by executin
 
 ## Usage
 
-TODO: Write usage instructions here
+
+```bash
+GRAND_ID_API_KEY='123' GRAND_ID_SERVICE_KEY='467' ruby some_app.rb
+```
+
+```ruby
+api_key, service_key = ENV.values_at('GRAND_ID_API_KEY', 'GRAND_ID_SERVICE_KEY')
+
+grand_id_simple = GrandIdSimple.new(api_key, service_key)
+
+grand_id_simple.federated_login(your_callback_url)
+# or if you know the personal number and would like to extend the courtesy of not having to scan qr code or manually fill
+login = grand_id_simple.federated_login(your_callback_url, personal_number: '198801010101')
+# => #<struct GrandIdSimple::Login session_id="123", redirect_url="https://grandid.se/redirect....">
+# redirect your user
+redirect_to(login.redirect_url)
+
+# Then when you receive the callback:
+
+person = grand_id_simple.get_session(params[:grandidsession])
+# => #<struct GrandIdSimple::Person personal_number="198801010101", name="Greta Musk", given_name="Greta", surname="Musk", ip_address=...>
+```
 
 ## Development
 
