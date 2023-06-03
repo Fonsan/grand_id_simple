@@ -31,7 +31,7 @@ Gem::Specification.new do |spec|
 
   # Uncomment to register a new dependency of your gem
   spec.add_dependency "typhoeus", "~> 1.4"
-  spec.add_dependency "sinatra", "~> 3.0"
+  spec.add_dependency "sinatra", "~> 2.2"
   spec.add_dependency "webrick", "~> 1.8"
 
   # For more information and examples about making a new gem, check out our
