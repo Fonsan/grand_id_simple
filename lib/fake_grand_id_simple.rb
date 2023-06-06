@@ -22,10 +22,7 @@ class FakeGrandIdSimple < GrandIdSimple
       get '/' do
         return redirect params[:callback_url] if params[:session_id]
         settings.people.map do |person|
-          uri = URI.parse(params[:callback_url])
-          new_query_ar = URI.decode_www_form(uri.query || '') << ["grandidsession", person.session_id]
-          uri.query = URI.encode_www_form(new_query_ar)
-          %(<a href="#{uri}">#{person.name}</a><br/>)
+          %(<a href="#{FakeGrandIdSimple.add_query_parameter(params[:callback_url], 'grandidsession', person.session_id)}">#{person.name}</a><br/>)
         end.join
       end
     end
@@ -37,9 +34,12 @@ class FakeGrandIdSimple < GrandIdSimple
 
   def federated_login(callback_url, personal_number: nil)
     @people.concat(@block.call) if @people.empty?
-    Login.new(
-      redirect_url: "#{@base_url}?callback_url=#{callback_url}"
-    )
+    redirect_url = if personal_number && person = @people.find {|person| person.personal_number == personal_number}
+      FakeGrandIdSimple.add_query_parameter(callback_url, 'grandidsession', person.session_id)
+    else
+      FakeGrandIdSimple.add_query_parameter(@base_url, 'callback_url', callback_url)
+    end
+    Login.new(redirect_url:)
   end
 
   def get_session(session_id)
@@ -48,5 +48,12 @@ class FakeGrandIdSimple < GrandIdSimple
 
   def logout(session_id)
     Logout.new(sessiondeleted: true)
+  end
+
+  def self.add_query_parameter(url, name, value)
+    uri = URI.parse(url)
+    new_query_ar = URI.decode_www_form(uri.query || '') << [name, value]
+    uri.query = URI.encode_www_form(new_query_ar)
+    uri.to_s
   end
 end
