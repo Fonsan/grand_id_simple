@@ -39,7 +39,7 @@ class FakeGrandIdSimple < GrandIdSimple
     else
       FakeGrandIdSimple.add_query_parameter(@base_url, 'callback_url', callback_url)
     end
-    Login.new(redirect_url:)
+    Login.new(redirect_url: redirect_url)
   end
 
   def get_session(session_id)
