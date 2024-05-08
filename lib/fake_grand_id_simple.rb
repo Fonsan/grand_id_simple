@@ -28,8 +28,11 @@ class FakeGrandIdSimple < GrandIdSimple
     end
     @app.set :people, @people
     @server.mount('/', Rack::Handler::WEBrick, @app)
-    @server_thread = Thread.start { @server.start }
     @base_url = "http://localhost:#{@server.config[:Port]}"
+  end
+
+  def start!
+    @server_thread = Thread.start { @server.start }
   end
 
   def federated_login(callback_url, personal_number: nil)
