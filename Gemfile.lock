@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    grand_id_simple (0.2.0)
+    grand_id_simple (1.0.0)
       sinatra (~> 2.2)
       typhoeus (~> 1.4)
       webrick (~> 1.8)
