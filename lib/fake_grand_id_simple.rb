@@ -46,13 +46,9 @@ class FakeGrandIdSimple < GrandIdSimple
     @server_thread = Thread.start { @server.start }
   end
 
-  def federated_login(callback_url, personal_number: nil)
+  def federated_login(**options)
     @people.concat(@block.call) if @people.empty?
-    redirect_url = if personal_number && person = @people.find {|p| p.personal_number == personal_number }
-      FakeGrandIdSimple.add_query_parameter(callback_url, 'grandidsession', person.session_id)
-    else
-      FakeGrandIdSimple.add_query_parameter(@base_url, 'callback_url', callback_url)
-    end
+    redirect_url = FakeGrandIdSimple.add_query_parameter(@base_url, 'callback_url', options[:callbackUrl])
     Login.new(redirect_url: redirect_url)
   end
 
