@@ -17,7 +17,7 @@ RSpec.describe GrandIdSimple do
         expect(request.options[:params]).to eq(apiKey: '123', authenticateServiceKey: '456')
         response
       end
-      subject.federated_login('http://callback-host.com/abc')
+      subject.federated_login(callbackUrl: 'http://callback-host.com/abc')
     end
 
     it 'translates reponse' do
@@ -28,7 +28,7 @@ RSpec.describe GrandIdSimple do
         ),
       )
       expect(
-        subject.federated_login('http://callback-host.com/abc'),
+        subject.federated_login(callbackUrl: 'http://callback-host.com/abc'),
       ).to eq(
         GrandIdSimple::Login.new(
           session_id: '999',

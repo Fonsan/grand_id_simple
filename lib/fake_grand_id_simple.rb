@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'cgi'
 require 'webrick'
 require 'grand_id_simple'
@@ -14,13 +15,23 @@ class FakeGrandIdSimple < GrandIdSimple
       "#{given_name} #{surname}"
     end
   end
+
+  def self.add_query_parameter(url, name, value)
+    uri = URI.parse(url)
+    new_query_ar = URI.decode_www_form(uri.query || '') << [name, value]
+    uri.query = URI.encode_www_form(new_query_ar)
+    uri.to_s
+  end
+
   def initialize(&block)
+    super(nil, nil)
     @block = block
     @people = []
     @server = WEBrick::HTTPServer.new(Port: 0)
     @app = Sinatra.new do
       get '/' do
         return redirect params[:callback_url] if params[:session_id]
+
         settings.people.map do |person|
           %(<a href="#{FakeGrandIdSimple.add_query_parameter(params[:callback_url], 'grandidsession', person.session_id)}">#{person.name}</a><br/>)
         end.join
@@ -37,7 +48,7 @@ class FakeGrandIdSimple < GrandIdSimple
 
   def federated_login(callback_url, personal_number: nil)
     @people.concat(@block.call) if @people.empty?
-    redirect_url = if personal_number && person = @people.find {|person| person.personal_number == personal_number}
+    redirect_url = if personal_number && person = @people.find {|p| p.personal_number == personal_number }
       FakeGrandIdSimple.add_query_parameter(callback_url, 'grandidsession', person.session_id)
     else
       FakeGrandIdSimple.add_query_parameter(@base_url, 'callback_url', callback_url)
@@ -46,17 +57,10 @@ class FakeGrandIdSimple < GrandIdSimple
   end
 
   def get_session(session_id)
-    @people.find {|person| person.session_id == session_id}
+    @people.find {|person| person.session_id == session_id }
   end
 
-  def logout(session_id)
+  def logout(_session_id)
     Logout.new(sessiondeleted: true)
-  end
-
-  def self.add_query_parameter(url, name, value)
-    uri = URI.parse(url)
-    new_query_ar = URI.decode_www_form(uri.query || '') << [name, value]
-    uri.query = URI.encode_www_form(new_query_ar)
-    uri.to_s
   end
 end

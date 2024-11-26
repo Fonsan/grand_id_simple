@@ -1,6 +1,3 @@
-require:
-  rubocop-rake
-
 inherit_gem:
   rubocop_fonsan_style:
     - .rubocop.yml

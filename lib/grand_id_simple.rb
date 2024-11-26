@@ -26,6 +26,8 @@ class GrandIdSimple
     :not_after,
     :signature,
     :ocsp_response,
+    :uhi,
+    :bank_id_issue_date,
     keyword_init: true,
   )
 
@@ -46,29 +48,40 @@ class GrandIdSimple
     @base_url = base_url
   end
 
-  def federated_login(callback_url, personal_number: nil)
+  # callbackUrl string  Optional  Where to return end-user after completion.
+  # customerURL string  Optional  Where to return end-user if they press the back button.
+  # userVisibleData base64  Optional  Visible data for the end-user to sign.
+  # userNonVisibleData  base64  Optional  Hidden data included in the signature.
+  # userVisibleDataFormat string  Optional  Used to format the visible signature data.
+  # authMessage base64  Optional  Visible data for the end-user to auth.
+  # mobileBankId  bool  Optional  Set to true to force usage of a Mobile BankID.
+  # desktopBankId bool  Optional  Set to true to force usage of a Desktop BankID.
+  # thisDevice  bool  Optional  Set to true to allow usage of the end-users current device
+  # qr  bool  Optional  Set to true to allow authentication/signing using a QR code
+  # allowFingerprintAuth  string  Optional  Set whether usage of fingerprint biometrics is allowed with the authentication.
+  # allowFingerprintSign  string  Optional  Set whether usage of fingerprint biometrics is allowed with the signature.
+  # gui string  Optional  Set to false to opt out of GrandID’s user interface and build your custom implementation.
+  # appRedirect string  Optional  Can be used to force a redirect to specific application from the BankID application.
+
+  def federated_login(**options)
     body = call_api(
       :FederatedLogin,
       method: :post,
       body: {
-        thisDevice: false,
-        askForSSN: !personal_number,
-        personalNumber: personal_number,
-        qr: true,
-        callbackUrl: callback_url,
+        **options,
       },
     )
-    Login.new(lower_keys(body))
+    Login.new(body)
   end
 
   def get_session(session_id)
     body = call_api(:GetSession, params: {sessionId: session_id})
-    Person.new(lower_keys(body[:userAttributes]))
+    Person.new(body[:user_attributes])
   end
 
   def logout(session_id)
     body = call_api(:Logout, params: {sessionId: session_id})
-    Logout.new(lower_keys(body))
+    Logout.new(body)
   end
 
   private
@@ -81,10 +94,10 @@ class GrandIdSimple
       body: body,
     )
     response = request.run
-    body = Oj.load(response.body, symbol_keys: true)
+    body = json_load(response.body)
     raise StandardError, 'no body' unless body
-    if error_object = body[:errorObject]
-      raise Error.new(*lower_keys(error_object).values_at(:code, :message))
+    if error_object = body[:error_object]
+      raise Error.new(*error_object.values_at(:code, :message))
     end
 
     body
@@ -97,8 +110,26 @@ class GrandIdSimple
     }
   end
 
-  def lower_keys(hash)
-    hash.transform_keys {|k| k.to_s.gsub(/([a-z])([A-Z]+)/, '\1_\2').downcase.to_sym }
+  def json_load(body)
+    deep_underscore_keys(Oj.load(body, symbol_keys: true))
+  end
+
+  def deep_underscore_keys(hash)
+    deep_transform_keys(hash) {|key| key.to_s.gsub(/([a-z])([A-Z]+)/, '\1_\2').downcase.to_sym }
+  end
+
+  def deep_transform_keys(hash, &block)
+    hash.each_with_object({}) do |(key, value), result|
+      new_key = yield(key)
+      new_value = if value.is_a?(Hash)
+        deep_transform_keys(value, &block)
+      elsif value.is_a?(Array)
+        value.map {|item| item.is_a?(Hash) ? deep_transform_keys(item, &block) : item }
+      else
+        value
+      end
+      result[new_key] = new_value
+    end
   end
 
   def url(call)

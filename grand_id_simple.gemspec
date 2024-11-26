@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description = 'A simple wrapper around the grandid api'
   spec.homepage = 'https://github.com/Fonsan/grand_id_simple'
   spec.license = 'MIT'
-  spec.required_ruby_version = '>= 2.6.0'
+  spec.required_ruby_version = '>= 3.0.0'
 
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['source_code_uri'] = spec.homepage
@@ -30,8 +30,8 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   # Uncomment to register a new dependency of your gem
-  spec.add_dependency "typhoeus", "~> 1.4"
   spec.add_dependency "sinatra", "~> 2.2"
+  spec.add_dependency "typhoeus", "~> 1.4"
   spec.add_dependency "webrick", "~> 1.8"
 
   # For more information and examples about making a new gem, check out our
